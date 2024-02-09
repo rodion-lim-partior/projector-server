@@ -6,6 +6,19 @@ Server-side library for running Swing applications remotely.
 
 [Documentation](https://jetbrains.github.io/projector-client/mkdocs/latest/) | [Issue tracker](https://youtrack.jetbrains.com/issues/PRJ)
 
+## Quickstart
+
+### Install a specific vefrsion of intellij
+```sh
+./install.sh
+```
+
+### Start projector
+Once started, navigate to 8887-workstation-remaining-url to remotely access intellij
+```sh
+./start.sh
+```
+
 ## The state of Projector
 
 The development of JetBrains Projector as its own standalone product has been suspended. That said, Projector remains an important part of [JetBrains Gateway](https://www.jetbrains.com/remote-development/gateway/), which is the primary remote development tool for JetBrains IDEs. We will focus our efforts on improving and developing Projector in this limited scenario.
