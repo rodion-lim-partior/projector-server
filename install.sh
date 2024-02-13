@@ -20,6 +20,7 @@ declare -A kind2Code
 kind2Code[Idea_Community]="IIC"
 kind2Code[Idea_Ultimate]="IIU"
 earliestCompatibleVersion="2020.1"
+latestCompatibleVersion="2022.1.4"
 
 if [ ! -d $appDir ] || [ ! -d $cacheDir ] || [ ! -f $metadataFile ]; then
     info "creating directory to store intellij in $appDir"
@@ -31,9 +32,18 @@ else
 fi
 
 # Allow user to select the type of IDE and Version that they want
-ideVersionLink=$(curl -s "https://data.services.jetbrains.com/products?code=${kind2Code["Idea_Community"]}&release.type=release&distribution=linux" | yq ".[0].releases | filter(.majorVersion > \"$earliestCompatibleVersion\")" | yq '.[] as $item ireduce ({}; .[$item | .version] = ($item | .downloads.linux.link)) | del(.[] | select(. == null))' | fzf -e --header "Select a version to install" --layout reverse | sed 's|"||g')
+ideVersionLink=$(curl -s "https://data.services.jetbrains.com/products?code=${kind2Code["Idea_Community"]}&release.type=release&distribution=linux" | yq ".[0].releases | filter(.majorVersion > \"$earliestCompatibleVersion\")" | yq '.[] as $item ireduce ({}; .[$item | .version] = ($item | .downloads.linux.link)) | del(.[] | select(. == null))' | fzf -e --header "Select a version (<= $latestCompatibleVersion) to install" --layout reverse | sed 's|"||g')
 ideVersion=$(awk -F ': ' '{print $1}' <<< $ideVersionLink)
 ideLink=$(awk -F ': ' '{print $2}' <<< $ideVersionLink)
+
+if [[ "$(echo -e "$ideVersion\n$latestCompatibleVersion" | sort -V -r | head -n 1)" == "$ideVersion" ]]; then
+    printf "Selected version [$ideVersion] is more recent than latest compatible version [$latestCompatibleVersion]. Are you sure you want to proceed [y/n]? "
+    read decision
+    if [[ $decision != "Y" && $decision != "yes" && decision != "YES" && $decision != "y" ]]; then
+        warn "please select a different IDE version, i.e >= $earliestCompatibleVersion and <= $latestCompatibleVersion"
+        exit 1
+    fi
+fi
 
 ideType=ideaIC
 ideTypeVersion=$ideType-$ideVersion

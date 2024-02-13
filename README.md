@@ -8,7 +8,7 @@ Server-side library for running Swing applications remotely.
 
 ## Quickstart
 
-### Install a specific vefrsion of intellij
+### Install a specific version of intellij
 ```sh
 ./install.sh
 ```
