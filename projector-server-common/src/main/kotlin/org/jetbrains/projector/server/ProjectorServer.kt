@@ -397,15 +397,21 @@ class ProjectorServer private constructor(
           }
         }
 
-      is ClientKeyPressEvent -> message.toAwtKeyEvent(
-        connectionMillis = clientSettings.connectionMillis,
-        target = focusOwnerOrTarget(PWindow.windows.last().target),
-      )
-        .let {
-          SwingUtilities.invokeLater {
-            laterInvokator(it)
+      is ClientKeyPressEvent -> {
+        try {
+          message.toAwtKeyEvent(
+          connectionMillis = clientSettings.connectionMillis,
+          target = focusOwnerOrTarget(PWindow.windows.last().target),
+        )
+          .let {
+            SwingUtilities.invokeLater {
+              laterInvokator(it)
+            }
           }
+        } catch (t: Throwable) {
+          logger.error(t) { "Client keymap was ignored (property specified)!" }
         }
+      } 
 
       is ClientRawKeyEvent -> SwingUtilities.invokeLater {
         laterInvokator(message.toAwtKeyEvent(
