@@ -48,19 +48,29 @@ import javax.imageio.ImageIO
 object ProjectorImageCacher : ImageCacher {
 
   override fun getImageId(image: Image, methodName: String): ImageId = when (image) {
+
     is BufferedImage -> putImage(image)
 
-    is ToolkitImage -> getImageId(image.bufferedImage, "$methodName, extracted BufferedImage from ToolkitImage")
+    is ToolkitImage -> {
+      try {
+        getImageId(image.bufferedImage, "$methodName, extracted BufferedImage from ToolkitImage")
+      } catch (e: Exception) {
+          // Handle the exception here, for example, log it or return a default ImageId
+          println("Exception occurred: ${e.message}")
+          // Return a default ImageId
+          ImageId.Unknown("Error processing ToolkitImage: ${e.message}")
+      }
+    }
 
     is PVolatileImage -> ImageId.PVolatileImageId(image.id)
 
     is SunVolatileImage -> getImageId(image.snapshot, "$methodName, extracted snapshot from SunVolatileImage")
 
     is MultiResolutionImage -> image.resolutionVariants
-                                 .singleOrNull()
-                                 ?.let { getImageId(it, "$methodName, extracted single variant") }
-                               ?: ImageId.Unknown(
-                                 "$methodName received MultiResolutionImage with bad variant count (${image.resolutionVariants.size}): $image")
+                                  .singleOrNull()
+                                  ?.let { getImageId(it, "$methodName, extracted single variant") }
+                                ?: ImageId.Unknown(
+                                  "$methodName received MultiResolutionImage with bad variant count (${image.resolutionVariants.size}): $image")
 
     else -> ImageId.Unknown("$methodName received ${image::class.qualifiedName}: $image")
   }
